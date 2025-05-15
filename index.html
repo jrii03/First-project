@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JriLabs</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #1e1e2f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      background: #282c34;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #61dafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header img {
+      width: 32px;
+      height: 32px;
+    }
+
+    #chatBox {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      word-wrap: break-word;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: #4e9af1;
+      color: white;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #444c56;
+      color: #d1d5db;
+    }
+
+    footer {
+      background: #282c34;
+      padding: 0.5rem 1rem;
+      position: sticky;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .input-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    button {
+      padding: 0.75rem 1rem;
+      background: #61dafb;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #4cc3f1;
+    }
+
+    .credit {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #bbb;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot Logo" />
+    JriLabs
+  </header>
+
+  <div id="chatBox"></div>
+
+  <footer>
+    <div class="input-container">
+      <input type="text" id="userInput" placeholder="Tulis pesan..." onkeydown="if(event.key==='Enter')sendMessage()" />
+      <button onclick="sendMessage()">Kirim</button>
+    </div>
+    <div class="credit">
+      Dibuat oleh <b>ファジリ</b> (Fajri)
+    </div>
+  </footer>
+
+  <script>
+    const API_URL = "https://proxy-alpha-nine.vercel.app/api/proxy?url=https://openrouter.ai/api/v1/chat/completions";
+    const MODEL_ID = "nousresearch/deephermes-3-mistral-24b-preview:free";
+
+    function addMessage(text, sender) {
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      div.textContent = text;
+      document.getElementById("chatBox").appendChild(div);
+      document.getElementById("chatBox").scrollTop = document.getElementById("chatBox").scrollHeight;
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      addMessage(userText, "user");
+      input.value = "";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: MODEL_ID,
+            messages: [{ role: "user", content: userText }]
+          })
+        });
+
+        const data = await response.json();
+        const reply = data.choices?.[0]?.message?.content;
+        addMessage(reply || "Tidak ada balasan dari AI.", "bot");
+
+      } catch (err) {
+        console.error(err);
+        addMessage("Terjadi kesalahan saat menghubungi server.", "bot");
+      }
+    }
+  </script>
+</body>
+</html>
