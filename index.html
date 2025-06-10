@@ -154,7 +154,10 @@
           },
           body: JSON.stringify({
             model: MODEL_ID,
-            messages: [{ role: "user", content: userText }]
+            messages: [
+              { role: "system", content: "Kamu adalah guru bahasa Jepang yang membantu pengguna memahami bahasa Jepang." },
+              { role: "user", content: message }
+        ]
           })
         });
 
